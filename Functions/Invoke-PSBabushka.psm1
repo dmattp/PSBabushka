@@ -12,7 +12,9 @@ Function Invoke-PSBabushka {
   if (-not $Path) { $Path = $env:PATH_BABUSHKA }
   if (-not $Path) { $Path = (Get-Location) }
 
+  $PSBabushka.Path = $Path
   $PSBabushka.Deps = Import-PSBabushkaDeps -From $Path
   $PSBabushka.Dep = Select-PSBabushkaDep -Name $Name
+    
   Invoke-PSBabushkaDep $PSBabushka.Dep
 }
