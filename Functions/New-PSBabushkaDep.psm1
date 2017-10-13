@@ -1,6 +1,7 @@
+#--*-Powershell-*--
 Function New-PSBabushkaDep {
   Param (
-    [Parameter(Mandatory=$True)]  [String]      $Name,
+    [Parameter(Mandatory=$False)]  [String]     $Name,
     [Parameter(Mandatory=$False)] [String[]]    $Requires,
     [Parameter(Mandatory=$False)] [String[]]    $RequiresWhenUnmet,
     [Parameter(Mandatory=$True)]  [ScriptBlock] $Met,
@@ -10,7 +11,7 @@ Function New-PSBabushkaDep {
   )
 
   return @{
-    Name              = $Name
+    Name              = if ($Name) { $Name } else { $psbabushka.psfilescriptname }
     Requires          = $Requires
     RequiresWhenUnmet = $RequiresWhenUnmet
     Met               = $Met

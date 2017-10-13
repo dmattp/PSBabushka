@@ -54,13 +54,19 @@ Function Invoke-PSBabushkaDepWithoutdeps {
 
 
 Function Invoke-PSBabushkaDep {
-  Param (
-    [Parameter(Mandatory=$True)] [Hashtable] $PSBabushkaDep
-  )
+    Param (
+        [Parameter(Mandatory=$True)] [Hashtable] $PSBabushkaDep
+    )
 
-  $name = $PSBabushkaDep.name
-  Get-PSBabushkaInorderDeplist $name | ForEach-Object {
-      Invoke-PSBabushkaDepWithoutdeps (Select-PSBabushkaDep -Name $_)
-  }
+    $name = $PSBabushkaDep.name
+    Get-PSBabushkaInorderDeplist $name | ForEach-Object {
+        $depName = $_
+        $depObject = Select-PSBabushkaDep -Name $depName
+        if ($depObject) {
+            Invoke-PSBabushkaDepWithoutdeps $depObject
+        } else {
+            throw "Did find definition for dependency named '$depName'"
+        }
+    }
 }
 
