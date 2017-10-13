@@ -34,8 +34,17 @@ Function Invoke-PSBabushkaDepWithoutdeps {
   if($PSBabushkaDep.Met.Invoke()) {
     Write-Output "[$Name] - Already met!"
   } else {
+      
     if ($PSBabushkaDep.RequiresWhenUnmet -ne $NULL) {
-      $PSBabushkaDep.RequiresWhenUnmet | ForEach-Object { Select-PSBabushkaDep -Name $_ } | ForEach-Object { Invoke-PSBabushkaDep $_ }
+        $PSBabushkaDep.RequiresWhenUnmet | ForEach-Object {
+            $depName = $_
+            $depObject = Select-PSBabushkaDep -Name $depName
+            if ($depObject) {
+                Invoke-PSBabushkaDep $depObject
+            } else {
+                throw "Did find definition for dependency named '$depName'"
+            }
+        }
     }
 
     Write-Output "[$Name] - Not met. Meeting now."
