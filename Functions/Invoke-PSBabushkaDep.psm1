@@ -25,40 +25,49 @@ Function Get-PSBabushkaInorderDeplist {
 
 
 Function Invoke-PSBabushkaDepWithoutdeps {
-  Param (
-    [Parameter(Mandatory=$True)] [Hashtable] $PSBabushkaDep
-  )
+    Param (
+        [Parameter(Mandatory=$True)] [Hashtable] $PSBabushkaDep
+    )
     
-  $Name = $PSBabushkaDep.Name
+    $Name = $PSBabushkaDep.Name
 
-  if($PSBabushkaDep.Met.Invoke()) {
-    Write-Output "[$Name] - Already met!"
-  } else {
-      
-    if ($PSBabushkaDep.RequiresWhenUnmet -ne $NULL) {
-        $PSBabushkaDep.RequiresWhenUnmet | ForEach-Object {
-            $depName = $_
-            $depObject = Select-PSBabushkaDep -Name $depName
-            if ($depObject) {
-                Invoke-PSBabushkaDep $depObject
+    if($PSBabushkaDep.Met.Invoke()) {
+        Write-Output "[$Name] - Already met!"
+    } else {
+        if ($PSBabushkaDep.RequiresWhenUnmet -ne $NULL) {
+            $PSBabushkaDep.RequiresWhenUnmet | ForEach-Object {
+                $depName = $_
+                $depObject = Select-PSBabushkaDep -Name $depName
+                if ($depObject) {
+                    Invoke-PSBabushkaDep $depObject
+                } else {
+                    throw "Did find definition for dependency named '$depName'"
+                }
+            }
+        }
+
+        Write-Output "[$Name] - Not met. Meeting now."
+
+        $performSetup = $true
+        
+        if ($PSBabushka.Confirm) {
+           $performSetup = & ($PSBabushka.Confirm) -Name $name -Description $name -Block ($PSBabushkaDep.Meet)
+        }
+
+        if (-not $performSetup) {
+            Write-Output "[$Name] - Not met; skipping because user declined."
+        } else {
+            Invoke-Command $PSBabushkaDep.Before
+            Invoke-Command $PSBabushkaDep.Meet
+            Invoke-Command $PSBabushkaDep.After
+
+            if ($PSBabushkaDep.Met.Invoke()) {
+                Write-Output "[$Name] - Now met!"
             } else {
-                throw "Did find definition for dependency named '$depName'"
+                throw "[$Name] - Still not met!"
             }
         }
     }
-
-    Write-Output "[$Name] - Not met. Meeting now."
-    
-    Invoke-Command $PSBabushkaDep.Before
-    Invoke-Command $PSBabushkaDep.Meet
-    Invoke-Command $PSBabushkaDep.After
-
-    if ($PSBabushkaDep.Met.Invoke()) {
-      Write-Output "[$Name] - Now met!"
-    } else {
-      throw "[$Name] - Still not met!"
-    }
-  }
 }
 
 
